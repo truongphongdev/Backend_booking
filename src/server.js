@@ -8,6 +8,7 @@ dotenv.config();
 
 const app = express();
 
+// init all web routes
 initWebRoutes(app);
 
 // Test the database connection

@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import initWebRoutes from "./routes/web.js";
 import db from "./models/index.cjs";
+
 const { sequelize } = db;
 
 dotenv.config();

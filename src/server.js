@@ -1,16 +1,25 @@
 import express from "express";
 import dotenv from "dotenv";
-import initWebRoutes from "./routes/web.js";
+import initApiRoutes from "./routes/api.js";
 import db from "./models/index.cjs";
+import configCORS from "./config/configCors.js";
 
 const { sequelize } = db;
 
 dotenv.config();
 
+// create express app
 const app = express();
 
-// init all web routes
-initWebRoutes(app);
+// config cors
+configCORS(app);
+
+// parse requests of content-type - application/json
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// init all api routes
+initApiRoutes(app);
 
 // Test the database connection
 try {

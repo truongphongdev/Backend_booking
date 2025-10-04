@@ -1,4 +1,3 @@
-import { where } from "sequelize";
 import db from "../models/index.cjs";
 
 const getAllUsers = async () => {
@@ -14,4 +13,7 @@ const getAllUsers = async () => {
     throw error;
   }
 };
-export { getAllUsers };
+
+const registerUser = async (userData) => {};
+
+export { registerUser, getAllUsers };

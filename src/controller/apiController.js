@@ -1,17 +1,18 @@
-import { registerUser } from "../service/userService.js";
+import { createNewUser } from "../service/userService.js";
 
-const handleRegisterUser = async (req, res) => {
+// create user
+const createUser = async (req, res) => {
   try {
-    // if(req.body)
+    const dataNewUser = req.body;
+    const user = await createNewUser(dataNewUser);
+    res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({
-      EM: "error from server", // error message
-      EC: -1, // error code
-      DT: "", // data
-    });
+    console.log("Lỗi gọi service createUser: ", error);
+    res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
 
+// test api
 const testApi = (req, res) => {
   return res.status(200).json({
     message: "Oke",
@@ -19,4 +20,4 @@ const testApi = (req, res) => {
   });
 };
 
-export { testApi, handleRegisterUser };
+export { testApi, createUser };

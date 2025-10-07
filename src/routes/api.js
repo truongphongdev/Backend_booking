@@ -1,5 +1,5 @@
 import express from "express";
-import { handleRegisterUser, testApi } from "../controller/apiController.js";
+import { testApi, createUser } from "../controller/apiController.js";
 
 const router = express.Router();
 /**
@@ -7,8 +7,11 @@ const router = express.Router();
  * @param {*} app express app
  */
 const initApiRoutes = (app) => {
-  router.get("/test-api", handleRegisterUser);
+  // test api
   router.get("/demo", testApi);
+
+  // api user
+  router.post("/create-user", createUser);
 
   return app.use("/api", router);
 };

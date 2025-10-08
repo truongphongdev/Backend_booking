@@ -1,5 +1,7 @@
+import { raw } from "mysql2";
 import db from "../models/index.cjs";
 import bcrypt from "bcrypt";
+import { where } from "sequelize";
 
 const saltRounds = 10;
 
@@ -13,14 +15,6 @@ const hashPassword = (password) => {
       reject(e);
     }
   });
-};
-
-// get id
-const getId = async () => {
-  try {
-  } catch (error) {
-    throw error;
-  }
 };
 
 // check email exist
@@ -95,15 +89,77 @@ const createNewUser = async (dataNewUser) => {
 };
 
 // get all user
-const getAllUsers = async () => {};
+const getAllUsers = async () => {
+  try {
+    const users = await db.User.findAll({
+      attributes: [
+        "id",
+        "fullName",
+        "gender",
+        "birthDate",
+        "email",
+        "phoneNumber",
+        "address",
+      ],
+      raw: true,
+    });
+    return users;
+  } catch (e) {
+    throw e;
+  }
+};
 
 // get user by id
-const getUserById = async () => {};
+const getUserById = async (userId) => {
+  try {
+    const id = userId.params.id;
+    const user = await db.User.findOne({
+      where: {
+        id: id,
+      },
+      attributes: [
+        "id",
+        "fullName",
+        "gender",
+        "birthDate",
+        "email",
+        "phoneNumber",
+        "address",
+      ],
+    });
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // edit user
-const editUser = async () => {};
+const editUser = async (id, newData) => {
+  try {
+    const userUpdate = await db.User.update(newData, {
+      where: {
+        id: id,
+      },
+    });
+    return userUpdate;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // delete user
-const deleteUser = async () => {};
+const deleteUser = async (id) => {
+  try {
+    const userDelete = await db.User.destroy({
+      where: {
+        id: id,
+      },
+    });
+    return userDelete;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export { createNewUser, getAllUsers, getUserById, editUser, deleteUser };

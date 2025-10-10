@@ -1,8 +1,8 @@
-import { raw } from "mysql2";
 import db from "../models/index.cjs";
 import bcrypt from "bcrypt";
-import { where } from "sequelize";
+import { Op, where } from "sequelize";
 
+// vòng muối
 const saltRounds = 10;
 
 // hash pass
@@ -162,4 +162,52 @@ const deleteUser = async (id) => {
   }
 };
 
-export { createNewUser, getAllUsers, getUserById, editUser, deleteUser };
+// check password
+const checkPassword = (myPlaintextPassword, hash) => {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(myPlaintextPassword, hash, function (err, result) {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+};
+
+// handle login
+const handleUserLogin = async (rawData) => {
+  try {
+    let user = await db.User.findOne({
+      where: {
+        [Op.or]: [{ email: rawData.email }],
+      },
+    });
+
+    if (user) {
+      let isPassCorrect = await checkPassword(rawData.password, user.password);
+      if (isPassCorrect === true) {
+        return {
+          EM: "Oke",
+          EC: 0,
+          DT: "",
+        };
+      }
+    }
+
+    console.log(">>>>>>>>>", rawData.email);
+    return {
+      EM: "Your email/phone/password is incorrect",
+      EC: 1,
+      DT: "",
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export {
+  createNewUser,
+  getAllUsers,
+  getUserById,
+  editUser,
+  deleteUser,
+  handleUserLogin,
+};

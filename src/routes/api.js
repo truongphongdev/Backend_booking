@@ -6,6 +6,7 @@ import {
   handleGetAllUser,
   handleEditUser,
   handleDeleteUser,
+  handleLogin,
 } from "../controller/apiController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const initApiRoutes = (app) => {
 
   // api user
   router.post("/create-user", createUser);
+  router.post("/login", handleLogin);
   router.get("/getAllUser", handleGetAllUser);
   router.get("/getUser/:id", handleGetUserById);
   router.put("/editUser/:id", handleEditUser);

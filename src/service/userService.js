@@ -192,7 +192,6 @@ const handleUserLogin = async (rawData) => {
       }
     }
 
-    console.log(">>>>>>>>>", rawData.email);
     return {
       EM: "Your email/phone/password is incorrect",
       EC: 1,

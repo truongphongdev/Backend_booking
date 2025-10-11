@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import initApiRoutes from "./routes/api.js";
 import db from "./models/index.cjs";
 import configCORS from "./config/configCors.js";
+import { createJWT, verifyToken } from "./middleware/jwtAction.js";
 
 const { sequelize } = db;
 
@@ -17,6 +18,11 @@ configCORS(app);
 // parse requests of content-type - application/json
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// test jwt
+let token = createJWT();
+let decodeData = verifyToken(token);
+console.log(decodeData);
 
 // init all api routes
 initApiRoutes(app);

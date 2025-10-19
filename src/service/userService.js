@@ -81,6 +81,7 @@ const createNewUser = async (dataNewUser) => {
       password: pass,
       phoneNumber,
       address,
+      groupId: 4,
     });
     return user;
   } catch (error) {
@@ -187,7 +188,10 @@ const handleUserLogin = async (rawData) => {
         return {
           EM: "Oke",
           EC: 0,
-          DT: "",
+          DT: {
+            // admin, user , doctor
+            access_token: "",
+          },
         };
       }
     }

@@ -3,6 +3,7 @@ import {
   getAllSchedules,
   getScheduleByDate,
   deleteSchedule,
+  getSchedulesByDoctorId,
 } from "../services/scheduleService.js";
 
 const handleCreateSchedule = async (req, res) => {
@@ -42,10 +43,19 @@ const handleDeleteSchedule = async (req, res) => {
     return res.status(500).json({ EM: "Lỗi server", EC: -1, DT: "" });
   }
 };
-
+const handleGetSchedulesByDoctorId = async (req, res) => {
+  try {
+    const doctorId = req.query.doctorId;
+    const data = await getSchedulesByDoctorId(doctorId);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ EM: "Lỗi server", EC: -1, DT: "" });
+  }
+};
 export {
   handleCreateSchedule,
   handleGetAllSchedules,
   handleGetScheduleByDate,
   handleDeleteSchedule,
+  handleGetSchedulesByDoctorId,
 };

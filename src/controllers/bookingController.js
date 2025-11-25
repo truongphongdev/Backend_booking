@@ -4,6 +4,8 @@ import {
   handleGetBookingById,
   handleDeleteBooking,
   handleUpdateBooking,
+  handleGetHistoryByPatientId,
+  handleGetBookingsByDoctorId,
 } from "../services/bookingService.js";
 
 // 1. Tạo lịch hẹn
@@ -91,11 +93,44 @@ const deleteBooking = async (req, res) => {
     });
   }
 };
+const getBookingHistory = async (req, res) => {
+  try {
+    // Lấy patientId từ query string: /api/booking-history?patientId=123
+    const patientId = req.query.patientId;
 
+    const result = await handleGetHistoryByPatientId(patientId);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log("Lỗi get history booking:", error);
+    return res.status(500).json({
+      EM: "Lỗi server",
+      EC: -1,
+      DT: null,
+    });
+  }
+};
+// Controller cho Bác sĩ xem lịch
+const getBookingsForDoctor = async (req, res) => {
+  try {
+    const doctorId = req.query.doctorId;
+    const date = req.query.date; // Có thể null nếu muốn lấy tất cả
+
+    const data = await handleGetBookingsByDoctorId(doctorId, date);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Error from server",
+    });
+  }
+};
 export {
   createBooking,
   getAllBooking,
   getBookingById,
   updateBooking,
   deleteBooking,
+  getBookingHistory,
+  getBookingsForDoctor,
 };

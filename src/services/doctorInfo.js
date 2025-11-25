@@ -118,9 +118,58 @@ const handleGetDoctorInfoById = async (id) => {
     };
   }
 };
+// src/services/doctorInfo.js
 
+const handleUpdateDoctorInfo = (data) => {
+  return new Promise(async (resolve, reject) => {
+    const t = await db.sequelize.transaction();
+    try {
+      if (!data.doctorId) {
+        await t.rollback();
+        resolve({ EM: "Thiếu tham số doctorId", EC: 1, DT: "" });
+        return;
+      }
+
+      // 1. Update/Insert bảng DoctorInfo (Chuyên môn)
+      await db.DoctorInfo.upsert(
+        {
+          doctorId: data.doctorId,
+          specialtyId: data.specialtyId,
+          lever: data.lever,
+          bio: data.bio,
+        },
+        { transaction: t }
+      );
+
+      // 2. Update bảng User (Thông tin cá nhân)
+      const user = await db.User.findOne({
+        where: { id: data.doctorId },
+        transaction: t,
+      });
+
+      if (user) {
+        if (data.phone) user.phone = data.phone;
+        if (data.address) user.address = data.address;
+
+        // 👇👇👇 THÊM DÒNG NÀY ĐỂ SỬA ĐƯỢC TÊN 👇👇👇
+        if (data.fullName) user.fullName = data.fullName;
+        // 👆👆👆 --------------------------------- 👆👆👆
+
+        await user.save({ transaction: t });
+      }
+
+      await t.commit();
+      resolve({ EM: "Cập nhật thông tin thành công", EC: 0, DT: "" });
+    } catch (error) {
+      await t.rollback();
+      console.log(error);
+      reject(error);
+    }
+  });
+};
 export {
   handleCreateDoctorInfo,
   handleGetAllDoctorInfo,
   handleGetDoctorInfoById,
+  handleUpdateDoctorInfo,
 };

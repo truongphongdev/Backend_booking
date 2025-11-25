@@ -1,13 +1,9 @@
 "use strict";
-const bcrypt = require("bcrypt"); // <-- Sửa thành 'bcrypt'
+const bcrypt = require("bcrypt");
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    /**
-     * Tạo user mẫu.
-     * Mật khẩu cho tất cả đều là: 123456
-     */
     // Băm mật khẩu một lần
     const hashedPassword = await bcrypt.hash("123456", 10);
 
@@ -16,59 +12,47 @@ module.exports = {
       [
         // === 1. ADMIN ===
         {
-          fullName: "Admin System",
-          account: "admin",
-          email: "admin@gmail.com",
-          phone: "0900000001",
+          fullName: "Trương Văn phong",
+          account: "aminphong",
+          email: "adminphong@gmail.com",
+          phone: "0814568895",
           passWord: hashedPassword,
-          address: "123 Admin St, Hanoi",
-          roleId: 1, // Giả định ID 1 là 'Admin' (từ file seed-role)
+          address: "Nam Từ Liêm, Hà Nội",
+          roleId: 1,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         // === 2. DOCTORS ===
         {
-          fullName: "Bác Sĩ Nguyễn Văn A",
-          account: "doctor.a",
-          email: "doctor.a@gmail.com",
-          phone: "0900000002",
+          fullName: "Khổng Văn Quân",
+          account: "doctorquan",
+          email: "doctorquan@gmail.com",
+          phone: "0902657894",
           passWord: hashedPassword,
-          address: "456 Doctor St, Hanoi",
-          roleId: 2, // Giả định ID 2 là 'Doctor' (từ file seed-role)
+          address: "456 Bắc Từ Liêm, Hà Nội",
+          roleId: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
-          fullName: "Bác Sĩ Trần Thị B",
-          account: "doctor.b",
-          email: "doctor.b@gmail.com",
-          phone: "0900000003",
+          fullName: "Văn Thanh Nga",
+          account: "doctornga",
+          email: "doctornga@gmail.com",
+          phone: "0956874562",
           passWord: hashedPassword,
-          address: "789 Doctor St, Hanoi",
-          roleId: 2, // Giả định ID 2 là 'Doctor' (từ file seed-role)
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        // === 3. PATIENTS ===
-        {
-          fullName: "Bệnh Nhân Lê Văn C",
-          account: "patient.c",
-          email: "patient.c@gmail.com",
-          phone: "0900000004",
-          passWord: hashedPassword,
-          address: "111 Patient St, Hanoi",
-          roleId: 3, // Giả định ID 3 là 'Patient' (từ file seed-role)
+          address: "Cầu Giấy, Hà Nội",
+          roleId: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
-          fullName: "Bệnh Nhân Phạm Thị D",
-          account: "patient.d",
-          email: "patient.d@gmail.com",
-          phone: "0900000005",
+          fullName: "Châu Hưng Thịnh",
+          account: "doctorthinh",
+          email: "doctorthinh@gmail.com",
+          phone: "0908785654",
           passWord: hashedPassword,
-          address: "222 Patient St, Hanoi",
-          roleId: 3, // Giả định ID 3 là 'Patient' (từ file seed-role)
+          address: "Ba Vì, Hanoi",
+          roleId: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

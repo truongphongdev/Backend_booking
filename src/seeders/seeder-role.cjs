@@ -34,7 +34,7 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     /**
-     * Chạy khi undo
+     * Chạy khi undo//
      */
     await queryInterface.bulkDelete("Role", null, {});
   },

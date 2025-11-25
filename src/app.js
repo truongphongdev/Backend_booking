@@ -4,7 +4,6 @@ import initApiRoutes from "./routes/api.js";
 import db from "./models/index.cjs";
 import configCORS from "./configs/configCors.js";
 import cookieParser from "cookie-parser";
-import { protectedRoute } from "./middleware/authMiddleware.js";
 
 const { sequelize } = db;
 

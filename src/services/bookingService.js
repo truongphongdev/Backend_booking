@@ -12,12 +12,11 @@ const handleCreateBooking = async (data) => {
       timeEnd,
       patientId,
       scheduleId,
-      services, // Mảng các serviceId: [1, 2, 5]
+      services,
     } = data;
 
-    // 1. Kiểm tra xem có chọn dịch vụ không
     if (!services || services.length === 0) {
-      await t.rollback(); // Hủy luôn nếu không có dịch vụ
+      await t.rollback();
       return {
         EM: "Vui lòng chọn ít nhất một dịch vụ",
         EC: 1,
@@ -25,7 +24,6 @@ const handleCreateBooking = async (data) => {
       };
     }
 
-    // 2. Tạo Booking (Kèm transaction: t)
     const newBooking = await db.Booking.create(
       {
         dateBooking,
@@ -36,13 +34,12 @@ const handleCreateBooking = async (data) => {
         patientId,
         scheduleId,
       },
-      { transaction: t } // <--- QUAN TRỌNG
+      { transaction: t }
     );
 
-    // 3. Tìm thông tin dịch vụ để lấy GIÁ (price)
     const serviceList = await db.Service.findAll({
       where: { id: services },
-      raw: true, // Lấy dữ liệu dạng JSON thuần cho nhẹ
+      raw: true,
     });
 
     if (serviceList.length === 0) {
@@ -50,18 +47,14 @@ const handleCreateBooking = async (data) => {
       return { EM: "Dịch vụ không tồn tại", EC: 2, DT: null };
     }
 
-    // 4. Tạo payload cho bảng trung gian BookingService
-    // Map giá từ bảng Service sang bảng BookingService
     const payload = serviceList.map((s) => ({
       bookingId: newBooking.id,
       serviceId: s.id,
-      priceAtBooking: s.price, // Lưu giá tại thời điểm đặt
+      priceAtBooking: s.price,
     }));
 
-    // 5. Lưu vào bảng trung gian (Kèm transaction: t)
-    await db.BookingService.bulkCreate(payload, { transaction: t }); // <--- QUAN TRỌNG
+    await db.BookingService.bulkCreate(payload, { transaction: t });
 
-    // 6. Nếu mọi thứ OK thì Commit (Lưu chính thức)
     await t.commit();
 
     return {
@@ -70,7 +63,6 @@ const handleCreateBooking = async (data) => {
       DT: newBooking,
     };
   } catch (error) {
-    // 7. Nếu có lỗi bất kỳ đâu -> Rollback (Hủy hết)
     await t.rollback();
     console.log("Lỗi khi đặt lịch:", error);
     return { EM: "Lỗi hệ thống khi đặt lịch", EC: -1, DT: null };
@@ -80,33 +72,31 @@ const handleCreateBooking = async (data) => {
 const handleGetAllBooking = async () => {
   try {
     const bookings = await db.Booking.findAll({
-      // 👇 THÊM PHẦN INCLUDE NÀY 👇
       include: [
         {
-          model: db.User, // Lấy thông tin Bệnh nhân
-          attributes: ["id", "fullName", "phone", "address", "email"], // Chỉ lấy trường cần thiết
+          model: db.User,
+          attributes: ["id", "fullName", "phone", "address", "email"],
         },
         {
-          model: db.Schedule, // Lấy thông tin Lịch/Bác sĩ
+          model: db.Schedule,
           include: [
             {
-              model: db.User, // Lấy tên Bác sĩ từ bảng Schedule
+              model: db.User,
               attributes: ["id", "fullName"],
             },
           ],
         },
         {
-          model: db.Service, // Lấy danh sách Dịch vụ đã đặt
-          as: "services", // Quan trọng: Phải khớp với alias trong model Booking
+          model: db.Service,
+          as: "services",
           attributes: ["id", "nameService", "price"],
           through: {
-            attributes: ["priceAtBooking"], // Lấy thêm giá tại thời điểm đặt từ bảng trung gian
+            attributes: ["priceAtBooking"],
           },
         },
       ],
-      order: [["createdAt", "DESC"]], // Sắp xếp mới nhất lên đầu
-      nest: true, // Gộp data lại cho gọn gàng
-      // raw: true, // ⚠️ Lưu ý: Nếu dùng include nhiều cấp, hạn chế dùng raw: true vì nó sẽ làm phẳng (flatten) dữ liệu, khó xử lý ở FE
+      order: [["createdAt", "DESC"]],
+      nest: true,
     });
 
     return {
@@ -128,7 +118,6 @@ const handleGetBookingById = async (id) => {
   try {
     const booking = await db.Booking.findOne({
       where: { id },
-      // 👇 CŨNG THÊM INCLUDE TƯƠNG TỰ 👇
       include: [
         {
           model: db.User,
@@ -136,9 +125,7 @@ const handleGetBookingById = async (id) => {
         },
         {
           model: db.Schedule,
-          include: [
-            { model: db.User, attributes: ["fullName"] }, // Tên bác sĩ
-          ],
+          include: [{ model: db.User, attributes: ["fullName"] }],
         },
         {
           model: db.Service,
@@ -215,7 +202,6 @@ const handleDeleteBooking = async (id) => {
       where: { id },
     });
 
-    // trả về 0 nếu không tồn tại
     if (affectedRows === 0) {
       return {
         EM: "Không tìm thấy Booking",
@@ -238,11 +224,111 @@ const handleDeleteBooking = async (id) => {
     };
   }
 };
+const handleGetHistoryByPatientId = (patientId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!patientId) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing required parameter: patientId",
+        });
+      } else {
+        const data = await db.Booking.findAll({
+          where: { patientId: patientId },
+          include: [
+            {
+              model: db.User,
 
+              attributes: ["email", "fullName", "address", "phone"],
+            },
+            {
+              model: db.Service,
+              as: "services",
+              attributes: ["nameService", "price", "description"],
+              through: { attributes: [] },
+            },
+            {
+              model: db.Schedule,
+              include: [{ model: db.User, attributes: ["fullName"] }],
+            },
+          ],
+          order: [["createdAt", "DESC"]],
+          raw: false,
+          nest: true,
+        });
+
+        resolve({
+          errCode: 0,
+          data: data,
+        });
+      }
+    } catch (error) {
+      console.log(">>> Lỗi Service:", error);
+      reject(error);
+    }
+  });
+};
+const handleGetBookingsByDoctorId = (doctorId, date) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!doctorId) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing required parameter: doctorId",
+        });
+        return;
+      }
+
+      // Tạo điều kiện query
+      let whereCondition = {};
+      if (date) {
+        // Nếu có truyền ngày -> Lọc theo ngày
+        whereCondition.dateBooking = date;
+      }
+
+      const bookings = await db.Booking.findAll({
+        where: whereCondition, // Lọc theo ngày (nếu có)
+        include: [
+          {
+            model: db.User, // Lấy thông tin Bệnh nhân
+            attributes: ["id", "email", "fullName", "phone", "address"],
+          },
+          {
+            model: db.Schedule, // JOIN bảng Schedule để lọc theo DoctorID
+            where: { doctorId: doctorId }, // <--- MẤU CHỐT Ở ĐÂY
+            attributes: ["timeStart", "timeEnd", "doctorId"],
+          },
+          {
+            model: db.Service, // Lấy tên dịch vụ
+            as: "services",
+            attributes: ["nameService"],
+            through: { attributes: [] },
+          },
+        ],
+        raw: false,
+        nest: true,
+        order: [
+          ["dateBooking", "ASC"],
+          ["timeStart", "ASC"],
+        ], // Sắp xếp theo ngày giờ
+      });
+
+      resolve({
+        errCode: 0,
+        data: bookings,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
 export {
   handleCreateBooking,
   handleGetAllBooking,
   handleGetBookingById,
   handleDeleteBooking,
   handleUpdateBooking,
+  handleGetHistoryByPatientId,
+  handleGetBookingsByDoctorId,
 };

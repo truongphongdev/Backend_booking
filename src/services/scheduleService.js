@@ -105,18 +105,54 @@ const getScheduleByDate = async (doctorId, date) => {
 // 4. Xóa lịch (Nếu bác sĩ bận đột xuất)
 const deleteSchedule = async (id) => {
   try {
+    // 1. Kiểm tra xem lịch này có booking nào không
+    const countBooking = await db.Booking.count({
+      where: { scheduleId: id },
+    });
+
+    if (countBooking > 0) {
+      return {
+        EM: "Không thể xóa lịch này vì đã có bệnh nhân đặt hẹn!",
+        EC: 2,
+        DT: "",
+      };
+    }
+
+    // 2. Nếu không có ai đặt thì xóa bình thường
     const schedule = await db.Schedule.findOne({ where: { id } });
     if (!schedule) {
       return { EM: "Lịch không tồn tại", EC: 2, DT: "" };
     }
 
     await db.Schedule.destroy({ where: { id } });
-
     return { EM: "Xóa lịch thành công", EC: 0, DT: "" };
   } catch (error) {
     console.log(error);
     return { EM: "Lỗi hệ thống service", EC: -1, DT: "" };
   }
 };
+// 5. Lấy toàn bộ lịch của 1 bác sĩ (để bác sĩ quản lý)
+const getSchedulesByDoctorId = async (doctorId) => {
+  try {
+    const schedules = await db.Schedule.findAll({
+      where: { doctorId: doctorId },
+      order: [
+        ["dateWork", "ASC"],
+        ["timeStart", "ASC"],
+      ], // Sắp xếp ngày tăng dần
+      raw: true,
+    });
 
-export { createSchedule, getAllSchedules, getScheduleByDate, deleteSchedule };
+    return { EM: "Lấy danh sách lịch thành công", EC: 0, DT: schedules };
+  } catch (error) {
+    console.log(error);
+    return { EM: "Lỗi hệ thống", EC: -1, DT: [] };
+  }
+};
+export {
+  createSchedule,
+  getAllSchedules,
+  getScheduleByDate,
+  deleteSchedule,
+  getSchedulesByDoctorId,
+};

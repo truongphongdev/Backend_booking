@@ -4,6 +4,7 @@ import {
   handleGetUserById,
   handleUpdateUser,
   handleDeleteUser,
+  changeUserRole,
 } from "../services/userServices.js";
 
 const createNewUser = async (req, res) => {
@@ -91,5 +92,21 @@ const deleteUser = async (req, res) => {
     });
   }
 };
-
-export { createNewUser, getAllUsers, getUserById, updateUser, deleteUser };
+const handleChangeRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { roleId } = req.body;
+    const data = await changeUserRole(id, roleId);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ EM: "Server error", EC: -1 });
+  }
+};
+export {
+  createNewUser,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  handleChangeRole,
+};
